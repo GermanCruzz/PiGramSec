@@ -1,0 +1,58 @@
+version: '3'
+services:
+  db:
+    image: linuxserver/mariadb
+    restart: always
+    container_name: nextclouddb
+    volumes:
+      - db:/var/lib/mysql
+    environment:
+      - MYSQL_INITDB_SKIP_TZINFO=1
+      - MYSQL_ROOT_PASSWORD=usuario
+      - MYSQL_PASSWORD=usuario
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=usuario
+
+  app:
+    image: nextcloud
+    container_name: nextcloud
+    restart: always
+    ports:
+      - 8090:80
+    links:
+      - db
+    volumes:
+      - ./html:/var/www/html
+    environment:
+      - MYSQL_PASSWORD=usuario
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=usuario
+      - MYSQL_HOST=db
+
+  nginx:
+     image: nginx
+     container_name: nginx-proxy
+     environment:
+       - TZ=Europe/Madrid
+     restart: always
+     ports:
+       - 80:80
+       - 443:443
+     volumes:
+       - ./nginx:/etc/nginx/
+       - ./certs:/etc/nginx/certs/
+       
+  apache:
+     image: httpd:latest
+     container_name: apache
+     environment:
+       - TZ=Europe/Madrid
+     restart: always
+     ports:
+       - 8080:80
+       - 8443:443
+     volumes:
+       - ./apacheht:/var/www/html
+
+volumes:
+  db:
